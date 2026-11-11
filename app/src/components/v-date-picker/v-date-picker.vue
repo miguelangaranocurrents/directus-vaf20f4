@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CalendarDate, DateFormatter, DateValue } from '@internationalized/date';
+import { CalendarDate, DateFormatter, DateValue, getDayOfWeek } from '@internationalized/date';
 import {
 	CalendarCell,
 	CalendarCellTrigger,
@@ -64,6 +64,15 @@ const {
 	includeSeconds: () => props.includeSeconds,
 	use24: () => props.use24,
 	onUpdate: (value) => emit('update:modelValue', value),
+});
+
+/**
+ * First day of the week (0 = Sunday) for the language of the user
+ */
+const weekStartsOn = computed(() => {
+	// 2024-01-07 is a Sunday; getDayOfWeek returns its index within the locale's week
+	const sunday = new CalendarDate(2024, 1, 7);
+	return ((7 - getDayOfWeek(sunday, userStore.language)) % 7) as 0 | 1 | 2 | 3 | 4 | 5 | 6;
 });
 
 const monthFormatter = computed(() => {
@@ -154,6 +163,8 @@ function setToNow() {
 			v-slot="{ weekDays, grid, date }"
 			:model-value="calendarValue"
 			:disabled="disabled"
+			:locale="userStore.language"
+			:week-starts-on="weekStartsOn"
 			class="calendar"
 			fixed-weeks
 			weekday-format="short"
